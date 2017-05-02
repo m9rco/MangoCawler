@@ -1,0 +1,20 @@
+{
+    "name": "pushaowei/test",
+    "authors": [
+        {
+            "name": "pushaowei",
+            "email": "542684913@qq.com"
+        }
+    ],
+    "require": {
+    	"guzzlehttp/guzzle": "6.2.*",
+        "symfony/dom-crawler": "^3.2",
+        "symfony/css-selector": "^3.2"
+    },
+    "repositories": {
+    "packagist": {
+        "type": "composer",
+        "url": "https://packagist.phpcomposer.com"
+    }
+    }
+}
