@@ -5,11 +5,11 @@ require_once dirname(__FILE__).'/drive/CrawlerInit.php';
 // swoole
 use worker\Client;
 use worker\Server;
-use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\Cookie\CookieJar;
-use GuzzleHttp\Pool;
-use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Psr7\Request;
+// use GuzzleHttp\Client as GuzzleClient;
+// use GuzzleHttp\Cookie\CookieJar;
+// use GuzzleHttp\Pool;
+// use GuzzleHttp\Exception\RequestException;
+// use GuzzleHttp\Psr7\Request;
 
 /*
 +--------------------------------------------------------------------------
@@ -48,7 +48,12 @@ use GuzzleHttp\Psr7\Request;
 	 * [$_Pages 页码]
 	 * @var [type]
 	 */
-	private $_Pages = 5;
+	private $_Pages = [];
+
+	const M_CAWLER_PAGE  = 200;
+	const M_CAWLER_WORKE = 20;
+
+
 
 	public function __construct()
 	{
@@ -104,10 +109,20 @@ use GuzzleHttp\Psr7\Request;
 	 */
 	public function initProcess(){
 		// Start processing
-		for ($i = 0; $i  < 25; $i ++) { 
+		for ($j = 0; $j  < self::M_CAWLER_PAGE; $j ++) { 
+			// $this->_Pages[] = 'http://test.inner.mosh.cn:30330/?s='.$j;  
+			$this->_Pages[] = str_replace(['\d','\d+'], $j, M_CRAWLER_URL);
+		}
+		$this->_Pages = array_chunk( $this->_Pages,self::M_CAWLER_WORKE);
+
+		for ($i = 0; $i  < self::M_CAWLER_WORKE; $i ++) { 
        		$process = new swoole_process([$this,'initWorker'],false);
 			$pid = $process->start();
+			$process->write( $i );
         	$this->_Worker[$pid] = $process;
+        }
+        foreach( $this->_Worker as $_worker ){
+        	echo "进程已完成：\t".$_worker->read().PHP_EOL;
         }
 	}
 
@@ -117,20 +132,62 @@ use GuzzleHttp\Psr7\Request;
 	 * @CreateTime	2017-05-02T13:21:09+0800
 	 * @return                              [type] [description]
 	 */
-	public function initWorker( swoole_process $process){
-		$ch = curl_init();
-		curl_setopt_array($ch, [
-			CURLOPT_URL 		   => 'http://test.inner.mosh.cn:30330/?s='.$this->_Pages,
-			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_CONNECTTIMEOUT => 10
-		]);
-		$dxycontent = curl_exec($ch); 
-		echo $dxycontent; 
-		curl_close($ch);
-		$this->_Pages--;
-		// @TODO
-		// 这还没加进去 
+	public function initWorker( swoole_process $worker){
+	    $i  = $worker->read();
+	    $array =  isset( $this->_Pages[$i] ) ? $this->_Pages[$i] : [];
+	    $multi_ch = curl_multi_init(); 
+	    if( !empty( $array) ){
+	    	$temp = $this->initCurl($array);
+	    	foreach( $temp as $value ){
+	    		$this->getContent( $value );
+	    	}
+			$worker->write( $worker->pid.'-- It‘s ok');
+		}  	
 	}
+
+	/**
+	 * [initCurl CURL]
+	 * @author 		Shaowei Pu <pushaowei@sporte.cn>
+	 * @CreateTime	2017-05-02T15:48:39+0800
+	 * @param                               [type] $url [description]
+	 * @return                              [type]      [description]
+	 */
+	public function initCurl( $nodes ){
+		// $ch = curl_init();
+		// curl_setopt_array($ch, [
+		// 	CURLOPT_URL 		   => $url,
+		// 	CURLOPT_RETURNTRANSFER => true,
+		// 	CURLOPT_CONNECTTIMEOUT => 10
+		// ]);
+		// $dxycontent = curl_exec($ch); 
+		// curl_close($ch);
+		// echo $dxycontent;
+		// $this->getContent( $dxycontent );	
+        $mh = curl_multi_init(); 
+        $curl_array = array(); 	
+        foreach($nodes as $i => $url){ 
+            $curl_array[$i] = curl_init($url); 
+            curl_setopt($curl_array[$i], CURLOPT_RETURNTRANSFER, true); 
+            curl_multi_add_handle($mh, $curl_array[$i]); 
+        } 
+        $running = NULL; 
+        do { 
+            usleep(10000); 
+            curl_multi_exec($mh,$running); 
+        } while($running > 0); 
+         
+        $res = array(); 
+        foreach($nodes as $i => $url) 
+        { 
+            $res[] = curl_multi_getcontent($curl_array[$i]); 
+        } 
+         
+        foreach($nodes as $i => $url){ 
+            curl_multi_remove_handle($mh, $curl_array[$i]); 
+        } 
+        curl_multi_close($mh);        
+        return $res; 
+	} 
 
 
     /**

@@ -83,9 +83,9 @@ class Server{
 			$data = json_decode($data,true);
 			// $stement = $this->pdo->prepare($data['sql']);
 			// $stement ->execute($data['params']);
-			 $this->pdo->table('damai_list')->insertMore( $data['data']);
-
-			$serv->send($data['fd'],'insert succed'); //将返回结果给客户端
+			 $insert_id = $this->pdo->table('damai_list')->insertMore( $data['data']);
+			 echo $insert_id.'insert succed'.PHP_EOL;
+			// $serv->send($data['fd'],'insert succed'); //将返回结果给客户端
 			return true;
 		}catch(\PDOException $e)
 		{
@@ -102,7 +102,7 @@ class Server{
 	 */
 	public function onFinish($serv,$task_id,$data){
 		// $serv->send( $data['fd'],'$data');
-		var_dump($task_id);
+		// var_dump($task_id);
 	}
 	/**
 	 * @param $serv
