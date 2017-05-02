@@ -38,6 +38,18 @@ use GuzzleHttp\Psr7\Request;
 	 */
 	private $_Client;
 
+	/**
+	 * [$_Worker 工作进程]
+	 * @var [type]
+	 */
+	private $_Worker;
+
+	/**
+	 * [$_Pages 页码]
+	 * @var [type]
+	 */
+	private $_Pages = 5;
+
 	public function __construct()
 	{
 		//--------------------------------------------------------------------------------
@@ -71,16 +83,55 @@ use GuzzleHttp\Psr7\Request;
 		ini_set("memory_limit", "101224M");
 
         // 开始
-		$this->_Guzzle   = new GuzzleClient();
+		// $this->_Guzzle   = new GuzzleClient();
 
-		echo $this->displayUi();
+		// echo $this->displayUi();
 
 		$this->getConfig();
 
-		// 初始化客户端
-		$this->initClient();
+		// 初始化同步客户端
+		// $this->initClient();
 		
+		// 初始化多进程
+		$this->initProcess();
 	}
+
+	/**
+	 * [initProcess 初始化多进程]
+	 * @author 		Shaowei Pu <pushaowei@sporte.cn>
+	 * @CreateTime	2017-05-02T13:20:45+0800
+	 * @return                              [type] [description]
+	 */
+	public function initProcess(){
+		// Start processing
+		for ($i = 0; $i  < 25; $i ++) { 
+       		$process = new swoole_process([$this,'initWorker'],false);
+			$pid = $process->start();
+        	$this->_Worker[$pid] = $process;
+        }
+	}
+
+	/**
+	 * [initWorker 各进程完成各自请求]
+	 * @author 		Shaowei Pu <pushaowei@sporte.cn>
+	 * @CreateTime	2017-05-02T13:21:09+0800
+	 * @return                              [type] [description]
+	 */
+	public function initWorker( swoole_process $process){
+		$ch = curl_init();
+		curl_setopt_array($ch, [
+			CURLOPT_URL 		   => 'http://test.inner.mosh.cn:30330/?s='.$this->_Pages,
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_CONNECTTIMEOUT => 10
+		]);
+		$dxycontent = curl_exec($ch); 
+		echo $dxycontent; 
+		curl_close($ch);
+		$this->_Pages--;
+		// @TODO
+		// 这还没加进去 
+	}
+
 
     /**
      * [initClient 初始化客户端]
