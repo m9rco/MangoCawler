@@ -14,8 +14,10 @@ require_once dirname(__FILE__).'/../vendor/autoload.php';
  * @var [type]
  */
 define('M_CRAWLER_URL', 'https://venue.damai.cn/search.aspx?cityID=0&k=0&keyword=&pageIndex=\d');
-
-
+define('M_DB_HOST', '127.0.0.1');
+define('M_DB_NAME', '');
+define('M_DB_USER', '');
+define('M_DB_PWD' , '');
 
 spl_autoload_register(function($class){
 	$filename = dirname(__FILE__).'/'.str_replace('\\','/',$class).'.php';

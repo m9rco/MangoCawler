@@ -250,7 +250,6 @@ use worker\Server;
 		$doc->loadHTML($content);
 		$xpath = new DOMXPath($doc);
 
-
 		// We starts from the root element
 		$href  = $xpath->query('//div[@class="v_mod"]//ul//li//span//a/@href');
 		$title = $xpath->query('//div[@class="v_mod"]//ul//li//span//h3//a/text()');

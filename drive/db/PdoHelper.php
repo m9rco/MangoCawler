@@ -71,14 +71,8 @@ class pdoHelper
 	 */
     private  function __construct()
 	{
-		$config = [
-				'dbname' => 'banana', 
-				'host'	 => '127.0.0.1',
-				'user'	 => 'root',
-				'pwd'	 => 'ilovechina'
-		];
 	    try{
-	        $this->pdo = new \PDO('mysql:dbname='.$config['dbname'].';host='.$config['host'],$config['user'],$config['pwd']);
+	        $this->pdo = new \PDO('mysql:dbname='.M_DB_NAME.';host='.M_DB_HOST,M_DB_USER,M_DB_PWD);
 	        $this->pdo->exec('SET NAMES utf8');//设置通信编码
 			$this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 	    }catch(PDOException $e){
