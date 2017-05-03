@@ -36,7 +36,10 @@ define('M_DB_PWD' , '');
 ```
 
 ## 使用方式
+
 ```
+composer install
+
 // 首先开启服务端启用连接池
 php \drive\worker\Server.php
 
