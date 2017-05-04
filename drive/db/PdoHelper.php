@@ -1,4 +1,6 @@
 <?php
+namespace db;
+
 /**
  * pdoHelper [Pdo 简单封装]
  * 

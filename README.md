@@ -6,6 +6,8 @@
 ## What I Do
 - 基于Swoole 多进程的爬虫方案
 
+![img](http://i4.buimg.com/567571/f37c0f0cf61d0ecc.jpg)
+
 ## Requirement
 - [PHP 7 +](http://php.net/manual/zh/migration71.new-features.php)
 - [Swoole](https://www.zhihu.com/question/41832866)

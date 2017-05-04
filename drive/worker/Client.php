@@ -1,5 +1,6 @@
 <?php
 namespace worker;
+
 class Client
 {
   private $client;
@@ -17,16 +18,11 @@ class Client
         'open_eof_check'        => true,
         'package_eof'           => "\r\n",
         'buffer_output_size'    => 32 * 1024 *1024,
-         'pipe_buffer_size' => 32 * 1024 *1024, //必须为数字
+        'pipe_buffer_size'      => 32 * 1024 *1024, 
 
     ]);
-    // $this->client->on('Connect', array($this, 'onConnect'));
-    // $this->client->on('Receive', array($this, 'onReceive'));
-    // $this->client->on('Close', arra/y($this, 'onClose'));
-    // $this->client->on('Error', array($this, 'onError'));
     $this->connect();
     $this->sendData( json_encode( $data )."\r\n" );
-    // file_put_contents('/home/pushaowei/debug', var_export([__FILE__,str_length()]));
   }
   
   public function recv(){
@@ -34,18 +30,18 @@ class Client
   }
 
   public function connect() {
-    $fp = $this->client->connect("127.0.0.1", 9632 , 10);
+    $fp = $this->client->connect( M_SWOOLE_HOST , M_SWOOLE_PORT , M_SWOOLE_TIME);
     if( !$fp ) {
       echo "Error: {$fp->errMsg}[{$fp->errCode}]\n";
       return;
     }
   }
+  
   public function onReceive( $cli, $data ) {
 
   }
   public function onConnect( $cli) {
     $cli->send("Get");
-    // $this->time = time();
   }
   public function onClose( $cli) {
       echo "Client close connection\n";
@@ -54,7 +50,6 @@ class Client
   }
   public function sendData($data) {
     $this->client->send( $data );
-    // $this->connect();
   }
   public function isConnected() {
     return $this->client->isConnected();

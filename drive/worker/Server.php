@@ -1,12 +1,14 @@
 <?php
 namespace worker;
+require_once dirname(__DIR__).'/CrawlerInit.php';
+
+use db\PdoHelper;
 
 class Server{
-
 	private $serv;
 	private $pdo;
 	public function __construct(){
-		$this->serv = new \swoole_server('127.0.0.1',9632);
+		$this->serv = new \swoole_server(M_SWOOLE_HOST,M_SWOOLE_PORT);
 		$this->serv ->set([
 			'open_eof_split'	       => true,
 			'worker_num'               => 20,
@@ -50,8 +52,8 @@ class Server{
 	 * @return [type]            [description]
 	 */
 	public function onWorkerStart($serv, $worker_id){
-		require_once dirname(__FILE__).'/../db/PdoHelper.php';
-		$this->pdo = \PdoHelper::getInstance();
+		// require_once dirname(__FILE__).'/../db/PdoHelper.php';
+		$this->pdo = PdoHelper::getInstance();
 	}
 
 	/**
@@ -81,14 +83,12 @@ class Server{
 	public function onTask($serv,$task_id,$from_id,$data){
 		try{
 			$data = json_decode($data,true);
-			// $stement = $this->pdo->prepare($data['sql']);
-			// $stement ->execute($data['params']);
-			 $insert_id = $this->pdo->table('damai_list')->insertMore( $data['data']);
+			 $insert_id = $this->pdo->table(M_DB_TABLE)
+			 						->insertMore( $data['data']);
 			 echo $insert_id.'insert succed'.PHP_EOL;
 			// $serv->send($data['fd'],'insert succed'); //将返回结果给客户端
 			return true;
-		}catch(\PDOException $e)
-		{
+		}catch(\PDOException $e){
 			var_dump($e->getMessage());
 			return false;
 		}
